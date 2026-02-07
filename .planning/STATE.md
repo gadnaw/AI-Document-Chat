@@ -3,13 +3,13 @@
 **Project:** AI Document Chat (RAG Pipeline)  
 **Milestone:** MVP  
 **Mode:** Brownfield  
-**Updated:** 2026-02-07T21:30:00Z
+**Updated:** 2026-02-07T21:46:00Z
 
 ## Current Position
 
-**Status:** Phase 4 Wave 2 Complete - Ready for Wave 3
-**Phase:** 4 - Chat Interface (W01, W02 complete)
-**Next:** Phase 4 Wave 3 - Conversation Persistence
+**Status:** Phase 4 Complete - Ready for Phase 5
+**Phase:** 4 - Chat Interface (ALL WAVES COMPLETE)
+**Next:** Phase 5 - Evaluation & Polish
 
 ## Progress
 
@@ -20,8 +20,8 @@
 | 1 | Foundation | ✅ Complete | ✅ Complete | ✅ Complete |
 | 2 | Document Ingestion | ✅ Complete | ✅ Complete | ✅ Complete |
 | 3 | Retrieval Infrastructure | ✅ Complete | ✅ Complete | ✅ Complete |
-| 4 | Chat Interface | ✅ Complete | ✅ Complete | ⏳ In Progress |
-| 5 | Evaluation & Polish | ✅ Complete | ✅ Complete | ⏳ Pending |
+| 4 | Chat Interface | ✅ Complete | ✅ Complete | ✅ Complete |
+| 5 | Evaluation & Polish | ✅ Complete | ✅ Complete | ⏳ In Progress |
 
 ### Research Summary
 
@@ -47,10 +47,35 @@
 |------|------|--------|---------|
 | W01 | Chat API & Streaming | ✅ Complete | /api/chat endpoint with streaming, citations, error handling |
 | W02 | UI Components & Citations | ✅ Complete | Chat UI with streaming, citations, loading/error states |
-| W03 | Conversation Persistence | ⏳ Pending | CRUD operations and message history |
-| W04 | Context & Rate Limiting | ⏳ Pending | Token management and rate limiting |
+| W03 | Conversation Persistence | ✅ Complete | CRUD operations and message history |
+| W04 | Context & Rate Limiting | ✅ Complete | Token management with tiktoken and sliding window rate limiting |
 
 ## Decisions Made
+
+### Phase 4 Wave 4 (Context & Rate Limiting)
+
+1. **Tiktoken Encoding Selection**
+   - Used `cl100k_base` encoding (GPT-4 compatible) for accurate token counting
+   - Added encoding disposal to prevent memory leaks
+   - Provides ~4x compression over character counting
+
+2. **Context Optimization Strategy**
+   - Sliding window truncation preserves recent conversation context
+   - Reserves 2000 tokens for response generation
+   - Removes oldest messages first when token limit exceeded
+   - System prompts always preserved at start
+
+3. **Rate Limit Configuration**
+   - 50 messages per hour per user (sliding window)
+   - Headers include remaining count, limit, reset time
+   - Graceful degradation with user-friendly messaging
+   - Disabled mode available for development
+
+4. **UI Feedback Design**
+   - Color-coded usage indicators (green → yellow → red)
+   - Warning banner when approaching limit (<10 remaining)
+   - Multiple display variants for different UI contexts
+   - Loading states for async token counting
 
 All phase decisions captured in respective CONTEXT.md files.
 
@@ -60,20 +85,20 @@ See .planning/CONSTRAINTS.md for all locked decisions.
 
 ## Next Steps
 
-**Recommended:** `/gsd-plan-phase 4` - Begin planning Phase 4 Wave 3 (Conversation Persistence)
+**Recommended:** `/gsd-execute-phase 05-w01` - Execute Phase 5 Wave 1 (Final Polish & Evaluation)
 
 **Also available:**
 - `/gsd-progress` — See full project status
 - `cat .planning/phases/*/*-SUMMARY.md` — Review execution summaries
-- `/gsd-execute-phase 04-w03` — Execute Conversation Persistence wave
+- `/gsd-execute-phase 05-w01` — Execute Phase 5 (Evaluation & Polish)
 
 ## Session Continuity
 
 **Last session:** 2026-02-07
-**Completed:** 04-w02 (UI Components & Citations)
-**Next task:** 04-w03-t01 (Create conversation API endpoints)
+**Completed:** 04-w04 (Context & Rate Limiting) - ALL TASKS COMPLETE
+**Next task:** 05-w01 (Phase 5 Evaluation & Polish)
 
 **Progress:**
-Phase 4: ████████░░░░░░░░░░░░░░░░ 50% (2/4 waves complete)
-Total: ████████████████████░░░░░ 80% (4/5 phases complete)
+Phase 4: ██████████████████████████ 100% (4/4 waves complete)
+Total: ████████████████████████████ 90% (4.5/5 phases complete - Phase 5 in progress)
 
