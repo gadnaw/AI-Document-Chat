@@ -17,6 +17,8 @@
     "@langchain/openai": "^1.2.5",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
     "ai": "^6.0.77",
     "ioredis": "^5.9.2",
     "langchain": "^1.2.18",
