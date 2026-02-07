@@ -11,9 +11,15 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@langchain/community": "^1.1.12",
+    "@langchain/core": "^1.1.19",
+    "@langchain/openai": "^1.2.5",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
+    "langchain": "^1.2.18",
     "next": "^14.2.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.624",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sonner": "^1.4.0"
