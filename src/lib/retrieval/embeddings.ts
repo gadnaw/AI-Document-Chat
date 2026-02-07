@@ -43,7 +43,6 @@ export async function generateQueryEmbedding(query: string): Promise<number[]> {
     const { embedding } = await embed({
       model: openai.embedding(EMBEDDING_MODEL),
       value: normalizedQuery,
-      dimensions: EMBEDDING_DIMENSIONS,
     });
     
     const latency = Date.now() - startTime;

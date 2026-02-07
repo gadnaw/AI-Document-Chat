@@ -1,4 +1,4 @@
-import LRUCache from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import Redis from 'ioredis';
 import { getConfig, CACHE_CONFIG, isRedisConfigured } from './cache-config';
 import { SearchResponse } from './search';
@@ -21,7 +21,6 @@ function getRedisClient(): Redis | null {
   if (!redisClient) {
     redisClient = new Redis(process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL!, {
       maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
       lazyConnect: true,
     });
     
@@ -321,4 +320,4 @@ function isStale(timestamp: number): boolean {
 }
 
 // Export cache instances and utilities
-export { embeddingCache, queryCache, getCacheStats, invalidateDocumentCache };
+export { embeddingCache, queryCache };

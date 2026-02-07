@@ -41,7 +41,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { retrieveRelevantChunks, getCacheStats } from '@/lib/retrieval/search';
 import {

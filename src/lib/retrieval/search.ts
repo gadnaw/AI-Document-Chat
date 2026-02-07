@@ -26,13 +26,14 @@ const DEFAULT_THRESHOLD = 0.7;
 /**
  * Search response interface containing results and metadata
  */
-interface SearchResponse {
+export interface SearchResponse {
   results: SearchResult[];
   metadata: {
     query: string;
     totalResults: number;
     latencyMs: number;
     cached: boolean;
+    suggestion?: string;
   };
 }
 
@@ -132,6 +133,9 @@ export async function retrieveRelevantChunks(
       totalResults: results.length,
       latencyMs: latency,
       cached: false,
+      suggestion: results.length === 0 
+        ? 'Try using different keywords, broader terms, or check if your documents contain the information you\'re looking for.'
+        : undefined,
     },
   };
   
