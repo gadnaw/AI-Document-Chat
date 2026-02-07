@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr'
 import { Database } from './types'
 
 /**
@@ -32,11 +32,18 @@ export function createBrowserClient() {
     )
   }
 
-  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+  return createSupabaseBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
 }
 
 /**
- * Type-safe browser Supabase client instance.
+ * Lazy getter for browser Supabase client.
  * Use this for client-side operations that require authentication.
  */
-export const supabaseBrowser = createBrowserClient()
+let _supabaseBrowser: ReturnType<typeof createBrowserClient> | null = null
+
+export function getSupabaseBrowser() {
+  if (!_supabaseBrowser) {
+    _supabaseBrowser = createBrowserClient()
+  }
+  return _supabaseBrowser
+}

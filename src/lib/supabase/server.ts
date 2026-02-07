@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient as createSupabaseServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from './types'
 
@@ -10,68 +10,61 @@ import { Database } from './types'
  * - Writing updated cookies after session refresh on POST requests
  * - Server-side operations with elevated privileges via service role key
  * 
- * @param forGET - Whether this client is for a GET request (read-only cookies)
+ * @param useServiceRole - Whether to use service role key (default: false uses anon key)
  * @returns Typed Supabase client instance for server environments
  * 
  * @example
  * ```typescript
- * // GET request - read auth state from cookies
- * const supabase = createServerClient(true)
+ * // Server component - read auth state from cookies
+ * const supabase = await createServerClient()
  * const { data: { user } } = await supabase.auth.getUser()
  * 
- * // POST request - refresh session and update cookies
- * const supabase = createServerClient(false)
- * await supabase.auth.exchangeCodeForSession(code)
+ * // API route with service role - bypass RLS
+ * const supabase = await createServerClient(true)
+ * await supabase.from('users').select('*')
  * ```
  */
-export function createServerClient(forGET: boolean = true) {
+export async function createServerClient(useServiceRole: boolean = false) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  if (!supabaseUrl) {
+  if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
       'Missing Supabase environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL ' +
-      'is set in your environment.'
+      'and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.'
     )
   }
 
-  // Server operations require service role key for elevated privileges
-  if (!supabaseServiceRoleKey) {
+  // Use service role key only when explicitly requested for admin operations
+  const key = useServiceRole ? supabaseServiceRoleKey : supabaseAnonKey
+  
+  if (useServiceRole && !supabaseServiceRoleKey) {
     throw new Error(
-      'Missing SUPABASE_SERVICE_ROLE_KEY environment variable. This key should only ' +
-      'be used in server-side code and never exposed to the client.'
+      'Missing SUPABASE_SERVICE_ROLE_KEY environment variable. This key is required ' +
+      'for admin operations but should never be exposed to the client.'
     )
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
 
-  return createServerClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+  return createSupabaseServerClient<Database>(supabaseUrl, key!, {
     cookies: {
       get(name: string) {
-        if (forGET) {
-          return cookieStore.get(name)?.value
-        }
-        // For POST requests, we don't read cookies - they are handled by the session management
-        return undefined
+        return cookieStore.get(name)?.value
       },
       set(name: string, value: string, options: CookieOptions) {
-        if (!forGET) {
-          // Only set cookies on POST requests to avoid cache issues
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch {
-            // The error here is typically related to headers being already sent
-            // which can happen in some edge cases
-          }
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch {
+          // This can fail in some edge cases when headers are already sent
         }
       },
       remove(name: string, options: CookieOptions) {
-        if (!forGET) {
-          try {
-            cookieStore.set({ name, value: '', ...options, maxAge: 0 })
-          } catch {
-            // Similar to above, this may fail if headers are already sent
-          }
+        try {
+          cookieStore.set({ name, value: '', ...options, maxAge: 0 })
+        } catch {
+          // This can fail in some edge cases
         }
       },
     },
@@ -79,7 +72,17 @@ export function createServerClient(forGET: boolean = true) {
 }
 
 /**
- * Type-safe server Supabase client instance for GET requests.
- * Use this for server components that need to read auth state.
+ * Convenience function for server components needing auth state.
+ * Uses anon key to respect RLS policies.
  */
-export const supabaseServer = createServerClient(true)
+export async function getServerSupabase() {
+  return createServerClient(false)
+}
+
+/**
+ * Convenience function for admin operations that bypass RLS.
+ * Only use in trusted server-side code.
+ */
+export async function getAdminSupabase() {
+  return createServerClient(true)
+}
