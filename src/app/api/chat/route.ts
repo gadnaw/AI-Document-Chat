@@ -4,12 +4,19 @@ import { getSession } from '@/lib/auth-utils';
 import { retrieveRelevantChunks } from '@/lib/retrieval/search';
 import { createClient } from '@supabase/supabase-js';
 import { persistMessage, updateConversationTitle } from '@/lib/persistence/message-persistence';
+import { ContextManager, ChatMessage, TOKEN_LIMITS } from '@/lib/tokens/manager';
 
 // Initialize Supabase client for message history
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Initialize context manager for token counting and optimization
+const contextManager = new ContextManager({
+  maxContextTokens: TOKEN_LIMITS.MAX_CONTEXT_TOKENS,
+  responseReserve: TOKEN_LIMITS.RESPONSE_RESERVE,
+});
 
 /**
  * Citation type for streaming metadata
@@ -63,7 +70,7 @@ export async function POST(req: Request) {
         .eq('conversation_id', conversationId)
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: true })
-        .limit(20); // Limit history for context window
+        .limit(50); // Load more messages, let context manager optimize
 
       if (!error && messages) {
         conversationHistory = messages.map(m => ({
@@ -71,6 +78,40 @@ export async function POST(req: Request) {
           content: m.content,
         }));
       }
+    }
+
+    // 4.5 Calculate token usage and optimize context
+    const retrievalContext = retrievalResult.results.map((result, index) => ({
+      content: `[Source ${index + 1}] ${result.documentName} (Page ${result.pageNumber || 'N/A'}):\n${result.content}`,
+      metadata: {
+        documentId: result.documentId,
+        chunkId: result.id,
+        documentName: result.documentName,
+        pageNumber: result.pageNumber,
+        similarityScore: result.similarityScore,
+      },
+    }));
+
+    // Calculate token breakdown
+    const tokenBreakdown = contextManager.calculateBreakdown(
+      conversationHistory,
+      retrievalContext
+    );
+
+    // Optimize conversation history if needed
+    const optimizedHistory = contextManager.optimizeMessages(
+      conversationHistory,
+      retrievalContext
+    );
+
+    // Log truncation if it occurred
+    if (optimizedHistory.length < conversationHistory.length) {
+      const truncationSummary = contextManager.getTruncationSummary(
+        conversationHistory,
+        optimizedHistory,
+        retrievalContext
+      );
+      console.log(`[chat] Context truncated: removed ${truncationSummary.removedMessages} messages (${truncationSummary.removedTokens} tokens) to fit token limit`);
     }
 
     // 5. Assemble system prompt with context and create citations
@@ -107,16 +148,18 @@ ${contextChunks || 'No relevant documents found.'}
     // Capture assistant response for persistence
     let assistantResponse = '';
     let currentConversationId = conversationId;
+    let streamingTokenCount = 0;
 
     const result = streamText({
       model: openai('gpt-4o'),
       messages: [
-        ...conversationHistory,
+        ...optimizedHistory,
         { role: 'user', content: message },
       ],
       system: systemPrompt,
       onFinish: async ({ text, usage, reasoning }) => {
         assistantResponse = text;
+        streamingTokenCount = (usage?.completionTokens || 0) + (usage?.promptTokens || 0);
 
         try {
           // Save user message
@@ -153,7 +196,7 @@ ${contextChunks || 'No relevant documents found.'}
           });
 
           // Update conversation title if this is the first message
-          if (conversationHistory.length === 0) {
+          if (optimizedHistory.length === 0) {
             await updateConversationTitle(currentConversationId, message);
           }
 
@@ -165,7 +208,7 @@ ${contextChunks || 'No relevant documents found.'}
       },
     });
 
-    // 7. Return streaming response with citations via data channel
+    // 7. Return streaming response with citations via data channel and token headers
     const dataStream = result.toDataStreamResponse({
       data: citations.map(citation => ({
         type: 'citation',
@@ -178,7 +221,23 @@ ${contextChunks || 'No relevant documents found.'}
       })),
     });
 
-    return dataStream;
+    // Add token usage headers
+    const headers = new Headers();
+    headers.set('Content-Type', 'text/plain; charset=utf-8');
+    headers.set('X-Token-Input', String(tokenBreakdown.messages));
+    headers.set('X-Token-Context', String(tokenBreakdown.context));
+    headers.set('X-Token-Reserved', String(tokenBreakdown.response));
+    headers.set('X-Token-Total', String(tokenBreakdown.total));
+    headers.set('X-Token-Limit', String(TOKEN_LIMITS.MAX_CONTEXT_TOKENS));
+
+    // Merge headers with data stream response
+    const response = new Response(dataStream.body, {
+      status: dataStream.status,
+      statusText: dataStream.statusText,
+      headers: headers,
+    });
+
+    return response;
 
   } catch (error) {
     console.error('[chat] Error processing request:', error);
