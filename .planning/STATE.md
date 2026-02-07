@@ -3,13 +3,13 @@
 **Project:** AI Document Chat (RAG Pipeline)  
 **Milestone:** MVP  
 **Mode:** Brownfield  
-**Updated:** 2026-02-07T20:40:00Z
+**Updated:** 2026-02-07T21:30:00Z
 
 ## Current Position
 
-**Status:** Phase 4 Wave 1 Complete - Ready for Wave 2
-**Phase:** 4 - Chat Interface (W01 complete)
-**Next:** Phase 4 Wave 2 - UI Components & Citations
+**Status:** Phase 4 Wave 2 Complete - Ready for Wave 3
+**Phase:** 4 - Chat Interface (W01, W02 complete)
+**Next:** Phase 4 Wave 3 - Conversation Persistence
 
 ## Progress
 
@@ -20,7 +20,7 @@
 | 1 | Foundation | ✅ Complete | ✅ Complete | ✅ Complete |
 | 2 | Document Ingestion | ✅ Complete | ✅ Complete | ✅ Complete |
 | 3 | Retrieval Infrastructure | ✅ Complete | ✅ Complete | ✅ Complete |
-| 4 | Chat Interface | ✅ Complete | ✅ Complete | ⏳ Pending |
+| 4 | Chat Interface | ✅ Complete | ✅ Complete | ⏳ In Progress |
 | 5 | Evaluation & Polish | ✅ Complete | ✅ Complete | ⏳ Pending |
 
 ### Research Summary
@@ -46,7 +46,7 @@
 | Wave | Name | Status | Summary |
 |------|------|--------|---------|
 | W01 | Chat API & Streaming | ✅ Complete | /api/chat endpoint with streaming, citations, error handling |
-| W02 | UI Components & Citations | ⏳ Pending | Chat UI components with citation display |
+| W02 | UI Components & Citations | ✅ Complete | Chat UI with streaming, citations, loading/error states |
 | W03 | Conversation Persistence | ⏳ Pending | CRUD operations and message history |
 | W04 | Context & Rate Limiting | ⏳ Pending | Token management and rate limiting |
 
@@ -60,17 +60,20 @@ See .planning/CONSTRAINTS.md for all locked decisions.
 
 ## Next Steps
 
-**Recommended:** `/gsd-plan-phase 4` - Begin planning Phase 4 Chat Interface execution
+**Recommended:** `/gsd-plan-phase 4` - Begin planning Phase 4 Wave 3 (Conversation Persistence)
 
 **Also available:**
 - `/gsd-progress` — See full project status
 - `cat .planning/phases/*/*-SUMMARY.md` — Review execution summaries
-- `/gsd-plan-phase 4` — Continue Phase 4 execution (next wave: W02)
+- `/gsd-execute-phase 04-w03` — Execute Conversation Persistence wave
 
 ## Session Continuity
 
 **Last session:** 2026-02-07
-**Completed:** 04-w01 (Chat API & Streaming)
-**Resume file:** None
-**Next task:** 04-w02-t01 (Create chat page layout)
+**Completed:** 04-w02 (UI Components & Citations)
+**Next task:** 04-w03-t01 (Create conversation API endpoints)
+
+**Progress:**
+Phase 4: ████████░░░░░░░░░░░░░░░░ 50% (2/4 waves complete)
+Total: ████████████████████░░░░░ 80% (4/5 phases complete)
 
