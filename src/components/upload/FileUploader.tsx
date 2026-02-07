@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, type DragEvent, type ChangeEvent } from 'react'
 import type { UploadFile, FileUploaderProps } from '@/types/upload'
-import { validateFile, validateFilesForUpload } from '@/lib/validation'
+import { validateFile, validateFilesForUpload } from '@/lib/file-validation'
 import { checkPreUploadDuplicate } from '@/lib/duplicate-detection'
 import { ProgressTracker } from '@/lib/progress-tracker'
 
@@ -103,23 +103,17 @@ export function FileUploader({
     const queuedFiles = tracker.queueState.files
     const uniqueReady: Array<{ file: File; sha256: string }> = []
     
-    for (const file of ready) {
-      const report = checkPreUploadDuplicate(file, queuedFiles)
+    for (const item of ready) {
+      const report = checkPreUploadDuplicate(item.file, queuedFiles)
       
       if (report.isDuplicate) {
         messages.push({
-          file: file.name,
-          message: report.message || `'${file.name}' was skipped (duplicate)`,
+          file: item.file.name,
+          message: report.message || `'${item.file.name}' was skipped (duplicate)`,
           type: 'error',
         })
       } else {
-        // Calculate hash for the file
-        const arrayBuffer = await file.arrayBuffer()
-        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const sha256 = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-        
-        uniqueReady.push({ file, sha256 })
+        uniqueReady.push(item)
       }
     }
 

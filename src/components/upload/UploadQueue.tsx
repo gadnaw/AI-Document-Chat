@@ -39,8 +39,8 @@ export function UploadQueue({
       const response = await fetch(`/api/progress/${sessionId}`)
       
       if (!response.ok) {
-        if (response.status {
-          // Session === 404) not found yet
+        if (response.status === 404) {
+          // Session not found yet
           return
         }
         throw new Error('Failed to fetch progress')

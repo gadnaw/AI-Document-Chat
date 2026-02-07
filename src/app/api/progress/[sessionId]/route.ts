@@ -137,10 +137,13 @@ export async function GET(
       return {
         id: file.id,
         name: file.name,
+        size: file.size,
         status: file.status as FileStatus,
         progress,
         error: file.error_message || undefined,
         sha256: file.sha256 || undefined,
+        sessionId: file.session_id,
+        createdAt: new Date(file.created_at),
       }
     })
 

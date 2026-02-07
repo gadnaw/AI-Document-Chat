@@ -68,8 +68,21 @@ export interface QueueState {
 export interface ProgressResponse {
   /** Session identifier */
   sessionId: string
-  /** All files in the session */
-  files: UploadFile[]
+  /** Files in the session (subset of UploadFile for polling) */
+  files: Array<{
+    /** Unique identifier for this file entry */
+    id: string
+    /** Original filename as uploaded by user */
+    name: string
+    /** Current status in the pipeline */
+    status: FileStatus
+    /** Progress percentage within current stage (0-100) */
+    progress: number
+    /** User-friendly error message if status is 'error' */
+    error?: string
+    /** SHA-256 hash for duplicate detection */
+    sha256?: string
+  }>
   /** Number of successfully completed files */
   completedCount: number
   /** Total number of files in session */

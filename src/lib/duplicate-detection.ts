@@ -120,7 +120,7 @@ export async function checkServerDuplicate(
       .select('id, name, user_id, created_at')
       .eq('sha256', sha256)
       .eq('user_id', userId)
-      .maybeSingle()
+      .maybeSingle() as { data: { id: string; name: string } | null; error: unknown }
 
     if (error) {
       console.error('Duplicate check query error:', error)
@@ -145,7 +145,7 @@ export async function checkServerDuplicate(
       .select('id, name')
       .eq('name', filename.toLowerCase())
       .eq('user_id', userId)
-      .maybeSingle()
+      .maybeSingle() as { data: { id: string; name: string } | null; error: unknown }
 
     if (nameMatch) {
       return generateDuplicateReport(true, 'name', {
