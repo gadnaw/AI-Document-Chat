@@ -362,6 +362,101 @@ Rationale: Security failures are catastrophic for trust; rigorous testing preven
 | 2 | Document Ingestion | PDF Processing, Chunking, Embedding | 2-3 weeks | Phase 1 | Rate limiting, Processing timeouts, Parsing quality |
 | 3 | Retrieval Infrastructure | Similarity Search, Performance | 1-2 weeks | Phase 2 | Index performance, Threshold tuning, Latency under load |
 | 4 | Chat Interface | Streaming AI, Citations, History | 2-3 weeks | Phase 3 | Hallucination, Token costs, Citation accuracy |
+| 5 | Evaluation & Polish | Testing, Quality, Security, Monitoring | 6 weeks | Phase 4 | Citation accuracy, RLS bypass, Production stability |
+
+---
+
+### Phase 5: Evaluation & Polish
+
+**Goal:** Finalize MVP with comprehensive testing, performance optimization, and production readiness through systematic validation of all system components, security compliance, and operational monitoring.
+
+**Plans:** 3 plans in 3 waves (Created ✅)
+
+**Plan 05-w01:** Testing Foundation
+- Wave 1: Playwright E2E tests, Vitest unit tests, k6 load tests, CI/CD integration
+
+**Plan 05-w02:** Quality & Security  
+- Wave 2: RAG evaluation metrics, Citation accuracy validation, RLS policy testing, OWASP ZAP security scan
+
+**Plan 05-w03:** Production Readiness
+- Wave 3: Sentry monitoring, Error boundaries, Circuit breakers, Uptime monitoring, Documentation
+
+**Status:** 🚧 In Progress (Planning Complete - Ready for Execution)
+
+**Success Criteria:**
+
+1. **Testing Coverage:**
+   - E2E test pass rate > 95% covering critical user paths
+   - Unit test coverage > 80% on business logic files
+   - Load tests validate 95% of documents <10MB process in <30 seconds
+   - Query latency P95 < 2 seconds under load
+
+2. **Quality Metrics:**
+   - Citation accuracy > 90% precision and > 85% recall
+   - Retrieval quality MRR@5 > 0.85, Hit Rate@5 > 0.90
+   - RLS policy compliance 100% with zero bypass successful
+
+3. **Security Validation:**
+   - Zero Critical vulnerabilities from OWASP ZAP scan
+   - Zero High vulnerabilities (or all have remediation plans)
+   - All RLS policies tested and verified
+
+4. **Production Readiness:**
+   - Sentry error monitoring integrated with <5 minute detection
+   - Uptime monitoring with alerting configured
+   - Error boundaries implemented for all major components
+   - Circuit breakers protecting external services
+   - Complete documentation: API, Operations, Architecture, Production deployment
+
+**Key Tasks:**
+
+**Wave 1 - Testing Foundation (Weeks 1-2):**
+1. Set up Playwright E2E testing with streaming response handling
+2. Configure Vitest unit testing with coverage reporting
+3. Implement k6 load testing for document processing, query latency, and throughput
+4. Integrate testing with CI/CD pipeline (GitHub Actions)
+5. Create test data fixtures and evaluation datasets
+
+**Wave 2 - Quality & Security (Weeks 3-4):**
+1. Implement RAG retrieval quality metrics (MRR, Hit Rate, NDCG)
+2. Create citation accuracy validation workflow with manual review
+3. Build automated RLS policy testing with bypass attempts
+4. Execute OWASP ZAP baseline security scan
+5. Generate comprehensive quality and security reports
+6. Establish production go/no-go recommendation
+
+**Wave 3 - Production Readiness (Weeks 5-6):**
+1. Configure Sentry error tracking and performance monitoring
+2. Implement React error boundaries with graceful fallback UI
+3. Build circuit breaker pattern for external service resilience
+4. Create health check endpoints and uptime monitoring
+5. Set up alerting for errors and downtime
+6. Document production deployment procedures
+7. Create API documentation for all endpoints
+8. Document architecture, operations, and troubleshooting guides
+
+**Dependencies:**
+
+- Phase 4 complete (Chat Interface available for E2E testing)
+- Phase 3 complete (Retrieval Infrastructure for quality metrics)
+- Phase 2 complete (Document Ingestion for processing tests)
+- Phase 1 complete (RLS policies to test)
+
+**Pitfall Mitigations:**
+
+- **Citation Accuracy < 90%:** Implement threshold tuning and chunk optimization; establish manual review workflow; set up accuracy tracking with alerts
+- **RLS Policy Bypass:** Automated RLS testing in CI/CD pipeline; regular security reviews; penetration testing before launch
+- **LLM Quality Degradation:** Circuit breaker pattern with fallback; cached responses for repeated queries; monitoring of response quality
+- **Production Instability:** Comprehensive monitoring with Sentry; circuit breakers prevent cascading failures; uptime monitoring with immediate alerting
+
+**Risks:**
+
+- **Citation Accuracy:** Risk of <90% accuracy undermining value proposition. Mitigation: Systematic manual review workflow; threshold tuning based on analysis; chunk optimization if needed
+- **Security Vulnerabilities:** Risk of RLS bypass or OWASP vulnerabilities. Mitigation: Automated RLS testing in CI/CD; OWASP ZAP baseline scan; penetration testing before launch
+- **Performance Regression:** Risk of degradation under load. Mitigation: k6 load tests in CI/CD; performance monitoring in production; automated alerts for latency spikes
+- **Monitoring Gaps:** Risk of undetected errors in production. Mitigation: Sentry integration with alerting; uptime monitoring with checks every 60 seconds; error boundary coverage >95%
+
+**Estimated Effort:** 6 weeks - Comprehensive testing, quality validation, security hardening, and operational preparation
 
 ---
 
