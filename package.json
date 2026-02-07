@@ -11,18 +11,23 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.26",
     "@langchain/community": "^1.1.12",
     "@langchain/core": "^1.1.19",
     "@langchain/openai": "^1.2.5",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
+    "ai": "^6.0.77",
+    "ioredis": "^5.9.2",
     "langchain": "^1.2.18",
+    "lru-cache": "^11.2.5",
     "next": "^14.2.0",
     "pdf-parse": "^1.1.4",
     "pdfjs-dist": "^5.4.624",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sonner": "^1.4.0"
+    "sonner": "^1.4.0",
+    "tiktoken": "^1.0.22"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
