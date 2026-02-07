@@ -11,7 +11,7 @@
 --   match_count: Maximum number of results to return, default 5
 -- Returns: Table with id, content, document_id, chunk_index, similarity score
 CREATE OR REPLACE FUNCTION match_documents(
-    query_embedding VECTOR(1536),
+    query_embedding VECTOR(256),
     match_threshold FLOAT DEFAULT 0.7,
     match_count INT DEFAULT 5
 )

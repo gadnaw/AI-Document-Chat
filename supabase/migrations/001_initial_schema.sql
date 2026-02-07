@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
-    embedding VECTOR(1536),  -- OpenAI text-embedding-3-small dimension
+    embedding VECTOR(256),  -- OpenAI text-embedding-3-small dimension
     chunk_index INTEGER NOT NULL,
     page_number INTEGER,
     metadata JSONB DEFAULT '{}'::JSONB,

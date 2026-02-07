@@ -1,0 +1,509 @@
+{
+  "version": "1.0",
+  "created": "2026-02-07T22:35:00Z",
+  "description": "Ground truth annotations for RAG retrieval quality evaluation",
+  "documents": [
+    {
+      "docId": "doc_ml_intro",
+      "title": "Introduction to Machine Learning",
+      "chunks": [
+        {
+          "chunkId": "chunk_ml_intro_1",
+          "content": "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. It focuses on developing computer programs that can access data and use it to learn for themselves.",
+          "relevance": {
+            "q001": 4,
+            "q006": 2,
+            "q017": 1
+          }
+        },
+        {
+          "chunkId": "chunk_ml_intro_2",
+          "content": "The process of machine learning begins with observations or data, such as examples, direct experience, or instruction. It then looks for patterns in data and makes better decisions in the future based on the examples that we provide. The primary aim is to allow the computers to learn automatically without human intervention or assistance and adjust actions accordingly.",
+          "relevance": {
+            "q001": 3,
+            "q017": 2
+          }
+        }
+      ]
+    },
+    {
+      "docId": "doc_ml_algorithms",
+      "title": "Common Machine Learning Algorithms",
+      "chunks": [
+        {
+          "chunkId": "chunk_ml_algo_1",
+          "content": "Machine learning algorithms are broadly categorized into supervised learning, unsupervised learning, and reinforcement learning. Each category serves different purposes and is suited for different types of problems.",
+          "relevance": {
+            "q001": 4,
+            "q002": 3,
+            "q020": 1
+          }
+        }
+      ]
+    },
+    {
+      "docId": "doc_supervised",
+      "title": "Supervised Learning",
+      "chunks": [
+        {
+          "chunkId": "chunk_supervised_1",
+          "content": "Supervised learning is a type of machine learning where the algorithm is trained on a labeled dataset. This means that for each example in the training set, the correct answer (label) is provided. The algorithm learns to map inputs to outputs by finding patterns in the labeled data.",
+          "relevance": {
+            "q002": 4,
+            "q011": 2
+          }
+        },
+        {
+          "chunkId": "chunk_supervised_2",
+          "content": "Common supervised learning tasks include classification and regression. Classification predicts discrete categories, while regression predicts continuous values. Examples include spam detection (classification) and house price prediction (regression).",
+          "relevance": {
+            "q002": 3,
+            "q011": 4,
+            "q032": 2
+          }
+        }
+      ]
+    },
+    {
+      "docId": "doc_unsupervised",
+      "title": "Unsupervised Learning",
+      "chunks": [
+        {
+          "chunkId": "chunk_unsupervised_1",
+          "content": "Unsupervised learning deals with unlabeled data. The algorithm tries to find patterns and relationships in the data without any predefined labels or targets. The system must be able to identify patterns autonomously.",
+          "relevance": {
+            "q002": 4,
+            "q031": 3
+          }
+        },
+        {
+          "chunkId": "chunk_unsupervised_2",
+          "content": "Common unsupervised learning techniques include clustering and dimensionality reduction. Clustering groups similar data points together, while dimensionality reduction reduces the number of features while preserving important information.",
+          "relevance": {
+            "q002": 3,
+            "q029": 3,
+            "q031": 4
+          }
+        }
+      ]
+    },
+    {
+      "doc_neural_nets": {
+        "title": "Neural Networks Fundamentals",
+        "chunks": {
+          "chunk_nn_1": {
+            "content": "Neural networks are computing systems inspired by biological neural networks that constitute animal brains. These systems learn to perform tasks by considering examples, generally without being programmed with any task-specific rules.",
+            "relevance": {
+              "q003": 3,
+              "q004": 2,
+              "q010": 2,
+              "q013": 1
+            }
+          }
+        }
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "queryId": "q001",
+      "relevantDocs": [
+        {
+          "docId": "doc_ml_intro",
+          "score": 4,
+          "reason": "Direct definition of machine learning"
+        },
+        {
+          "docId": "doc_ml_algorithms",
+          "score": 3,
+          "reason": "Algorithm overview relevant to ML explanation"
+        }
+      ]
+    },
+    {
+      "queryId": "q002",
+      "relevantDocs": [
+        {
+          "docId": "doc_supervised",
+          "score": 4,
+          "reason": "Clear explanation of supervised learning"
+        },
+        {
+          "docId": "doc_unsupervised",
+          "score": 4,
+          "reason": "Clear explanation of unsupervised learning"
+        },
+        {
+          "docId": "doc_ml_comparison",
+          "score": 3,
+          "reason": "Direct comparison between approaches"
+        }
+      ]
+    },
+    {
+      "queryId": "q003",
+      "relevantDocs": [
+        {
+          "docId": "doc_neural_nets",
+          "score": 4,
+          "reason": "Neural networks fundamentals"
+        },
+        {
+          "docId": "doc_decision_trees",
+          "score": 4,
+          "reason": "Decision tree fundamentals"
+        },
+        {
+          "docId": "doc_ml_comparison",
+          "score": 3,
+          "reason": "Comparison between both approaches"
+        }
+      ]
+    },
+    {
+      "queryId": "q004",
+      "relevantDocs": [
+        {
+          "docId": "doc_gradient_descent",
+          "score": 4,
+          "reason": "Detailed gradient descent explanation"
+        },
+        {
+          "docId": "doc_backpropagation",
+          "score": 4,
+          "reason": "Backpropagation in neural network training"
+        },
+        {
+          "docId": "doc_neural_nets",
+          "score": 3,
+          "reason": "Neural network training context"
+        }
+      ]
+    },
+    {
+      "queryId": "q005",
+      "relevantDocs": [
+        {
+          "docId": "doc_text_preprocessing",
+          "score": 4,
+          "reason": "Comprehensive text preprocessing guide"
+        },
+        {
+          "docId": "doc_nlp_basics",
+          "score": 3,
+          "reason": "NLP fundamentals including preprocessing"
+        },
+        {
+          "docId": "doc_feature_engineering",
+          "score": 2,
+          "reason": "Feature engineering for text data"
+        }
+      ]
+    },
+    {
+      "queryId": "q006",
+      "relevantDocs": [
+        {
+          "docId": "doc_nlp_applications",
+          "score": 4,
+          "reason": "Comprehensive NLP applications list"
+        },
+        {
+          "docId": "doc_industry_ai",
+          "score": 3,
+          "reason": "Industry AI applications including NLP"
+        }
+      ]
+    },
+    {
+      "queryId": "q007",
+      "relevantDocs": [
+        {
+          "docId": "doc_transformers",
+          "score": 4,
+          "reason": "Transformer architecture explanation"
+        },
+        {
+          "docId": "doc_rnn",
+          "score": 4,
+          "reason": "RNN architecture and limitations"
+        },
+        {
+          "docId": "doc_attention",
+          "score": 4,
+          "reason": "Attention mechanism as key difference"
+        }
+      ]
+    },
+    {
+      "queryId": "q008",
+      "relevantDocs": [
+        {
+          "docId": "doc_ai_ethics",
+          "score": 4,
+          "reason": "AI ethics framework"
+        },
+        {
+          "docId": "doc_healthcare_ai",
+          "score": 4,
+          "reason": "Healthcare-specific AI considerations"
+        },
+        {
+          "docId": "doc_bias_ai",
+          "score": 3,
+          "reason": "Bias in AI systems"
+        }
+      ]
+    },
+    {
+      "queryId": "q009",
+      "relevantDocs": [
+        {
+          "docId": "doc_overfitting",
+          "score": 4,
+          "reason": "Comprehensive overfitting explanation"
+        },
+        {
+          "docId": "doc_regularization",
+          "score": 4,
+          "reason": "Regularization techniques to prevent overfitting"
+        },
+        {
+          "docId": "doc_model_selection",
+          "score": 3,
+          "reason": "Model selection to avoid overfitting"
+        }
+      ]
+    },
+    {
+      "queryId": "q010",
+      "relevantDocs": [
+        {
+          "docId": "doc_attention",
+          "score": 4,
+          "reason": "Attention mechanism explanation"
+        },
+        {
+          "docId": "doc_transformers",
+          "score": 3,
+          "reason": "Role of attention in transformers"
+        },
+        {
+          "docId": "doc_neural_nets",
+          "score": 2,
+          "reason": "Context for attention importance"
+        }
+      ]
+    },
+    {
+      "queryId": "q011",
+      "relevantDocs": [
+        {
+          "docId": "doc_classification_metrics",
+          "score": 4,
+          "reason": "Classification metrics (accuracy, precision, recall, F1)"
+        },
+        {
+          "docId": "doc_model_evaluation",
+          "score": 3,
+          "reason": "Model evaluation techniques"
+        }
+      ]
+    },
+    {
+      "queryId": "q012",
+      "relevantDocs": [
+        {
+          "docId": "doc_llm_overview",
+          "score": 4,
+          "reason": "Large language models overview"
+        },
+        {
+          "docId": "doc_llm_pros_cons",
+          "score": 4,
+          "reason": "Detailed pros and cons analysis"
+        },
+        {
+          "docId": "doc_model_comparison",
+          "score": 3,
+          "reason": "Comparison with other model types"
+        }
+      ]
+    },
+    {
+      "queryId": "q013",
+      "relevantDocs": [
+        {
+          "docId": "doc_batch_norm",
+          "score": 4,
+          "reason": "Batch normalization explanation"
+        },
+        {
+          "docId": "doc_layer_norm",
+          "score": 4,
+          "reason": "Layer normalization explanation"
+        },
+        {
+          "docId": "doc_normalization",
+          "score": 3,
+          "reason": "Normalization overview"
+        }
+      ]
+    },
+    {
+      "queryId": "q014",
+      "relevantDocs": [
+        {
+          "docId": "doc_inference_optimization",
+          "score": 4,
+          "reason": "Inference optimization techniques"
+        },
+        {
+          "docId": "doc_model_compression",
+          "score": 3,
+          "reason": "Model compression for faster inference"
+        },
+        {
+          "docId": "doc_latency_reduction",
+          "score": 3,
+          "reason": "Latency reduction strategies"
+        }
+      ]
+    },
+    {
+      "queryId": "q015",
+      "relevantDocs": [
+        {
+          "docId": "doc_rl_basics",
+          "score": 4,
+          "reason": "Reinforcement learning fundamentals"
+        },
+        {
+          "docId": "doc_rl_games",
+          "score": 4,
+          "reason": "RL applications in game playing"
+        },
+        {
+          "docId": "doc_rl_algorithms",
+          "score": 3,
+          "reason": "RL algorithms used in training agents"
+        }
+      ]
+    },
+    {
+      "queryId": "q016",
+      "relevantDocs": [
+        {
+          "docId": "doc_ml_ops",
+          "score": 4,
+          "reason": "MLOps challenges overview"
+        },
+        {
+          "docId": "doc_deployment_challenges",
+          "score": 4,
+          "reason": "Production deployment challenges"
+        },
+        {
+          "docId": "doc_production_ml",
+          "score": 3,
+          "reason": "Production ML considerations"
+        }
+      ]
+    },
+    {
+      "queryId": "q017",
+      "relevantDocs": [
+        {
+          "docId": "doc_transfer_learning",
+          "score": 4,
+          "reason": "Transfer learning explanation and benefits"
+        },
+        {
+          "docId": "doc_pretrained_models",
+          "score": 3,
+          "reason": "Pretrained models enabling transfer learning"
+        }
+      ]
+    },
+    {
+      "queryId": "q018",
+      "relevantDocs": [
+        {
+          "docId": "doc_ai_security",
+          "score": 4,
+          "reason": "AI security concerns overview"
+        },
+        {
+          "docId": "doc_adversarial_ml",
+          "score": 4,
+          "reason": "Adversarial attack concerns"
+        },
+        {
+          "docId": "doc_secure_ai",
+          "score": 3,
+          "reason": "Secure AI development practices"
+        }
+      ]
+    },
+    {
+      "queryId": "q019",
+      "relevantDocs": [
+        {
+          "docId": "doc_lstm",
+          "score": 4,
+          "reason": "LSTM architecture explanation"
+        },
+        {
+          "docId": "doc_gru",
+          "score": 4,
+          "reason": "GRU architecture explanation"
+        },
+        {
+          "docId": "doc_rnn",
+          "score": 4,
+          "reason": "Vanilla RNN architecture"
+        },
+        {
+          "docId": "doc_rnn_comparison",
+          "score": 3,
+          "reason": "Comparison between RNN variants"
+        }
+      ]
+    },
+    {
+      "queryId": "q020",
+      "relevantDocs": [
+        {
+          "docId": "doc_class_imbalance",
+          "score": 4,
+          "reason": "Class imbalance handling techniques"
+        },
+        {
+          "docId": "doc_sampling_techniques",
+          "score": 4,
+          "reason": "Oversampling and undersampling methods"
+        },
+        {
+          "docId": "doc_metric_selection",
+          "score": 3,
+          "reason": "Appropriate metrics for imbalanced data"
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "totalQueries": 50,
+    "avgRelevantDocsPerQuery": 2.4,
+    "difficultyDistribution": {
+      "easy": 15,
+      "medium": 25,
+      "hard": 10
+    },
+    "categoryDistribution": {
+      "conceptual": 18,
+      "factual": 12,
+      "comparative": 15,
+      "other": 5
+    }
+  }
+}

@@ -1,0 +1,36 @@
+# Uptime Monitoring Configuration
+# Copy this file to .uptime-env and fill in your values
+
+# Health check interval in seconds
+UPTIME_INTERVAL=60
+
+# Target URL to monitor (update for production)
+UPTIME_TARGET_URL=http://localhost:3000
+
+# Health check endpoint
+UPTIME_HEALTH_ENDPOINT=/api/health
+
+# Request timeout in milliseconds
+UPTIME_TIMEOUT=10000
+
+# Alert thresholds
+UPTIME_ALERT_FAILURES=3
+UPTIME_LATENCY_WARNING=5000
+UPTIME_LATENCY_CRITICAL=10000
+
+# Slack Webhook Integration (optional)
+# Create webhook at: https://api.slack.com/messaging/webhooks
+SLACK_WEBHOOK_URL=
+SLACK_CHANNEL=#alerts
+
+# Email Alerting via SMTP (optional)
+# Install nodemailer: npm install nodemailer
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+ALERT_EMAIL=admin@yourdomain.com
+
+# Logging
+UPTIME_LOG_FILE=./logs/uptime.log
+UPTIME_METRICS_FILE=./logs/uptime-metrics.json

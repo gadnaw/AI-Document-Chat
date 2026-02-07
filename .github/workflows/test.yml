@@ -1,0 +1,344 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Which test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - e2e
+          - load
+      environment:
+        description: 'Test environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+  # Job 1: Lint and Type Check
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+  # Job 2: Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Run Unit Tests
+        run: npm run test:unit
+      
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # Job 3: E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Start development server
+        run: npm run dev &
+        shell: bash
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+          echo "Server failed to start"
+          exit 1
+      
+      - name: Run E2E Tests
+        run: npm run test:e2e
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Job 4: Load Tests (optional - runs on schedule or manual)
+  load-tests:
+    name: Load Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install k6
+        run: |
+          curl -sL https://github.com/grafana/k6/releases/download/v0.55.0/k6-v0.55.0-linux-amd64.tar.gz | tar xz
+          sudo mv k6-v0.55.0-linux-amd64/k6 /usr/local/bin
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Start server for load testing
+        run: npm run start &
+        shell: bash
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i/60)"
+            sleep 2
+          done
+          echo "Server failed to start"
+          exit 1
+      
+      - name: Run Smoke Test
+        if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'load'
+        run: k6 run --out json=k6-results-smoke.json k6/load-tests.js -e SCENARIO=smoke
+      
+      - name: Run Load Test
+        if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'load'
+        run: k6 run --out json=k6-results-load.json k6/load-tests.js -e SCENARIO=load
+      
+      - name: Run Performance Test
+        if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'load'
+        run: k6 run --out json=k6-results-performance.json k6/load-tests.js -e SCENARIO=performance
+      
+      - name: Upload k6 results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: k6-results*.json
+          retention-days: 7
+      
+      - name: Analyze k6 results
+        if: always()
+        run: |
+          echo "Load Test Results:"
+          if [ -f k6-results-load.json ]; then
+            cat k6-results-load.json | jq '.metrics'
+          fi
+
+  # Job 5: Test Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, load-tests]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Generate test summary
+        run: |
+          echo "# Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Unit Tests" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/lcov.info ]; then
+            echo "✅ Unit tests passed" >> $GITHUB_STEP_SUMMARY
+            echo "Coverage: Check codecov report" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Unit tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## E2E Tests" >> $GITHUB_STEP_SUMMARY
+          if [ -f playwright-report/index.html ]; then
+            echo "✅ E2E tests completed" >> $GITHUB_STEP_SUMMARY
+            echo "Report: playwright-report/index.html" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ E2E tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Load Tests" >> $GITHUB_STEP_SUMMARY
+          if [ -f k6-results-performance.json ]; then
+            echo "✅ Load tests completed" >> $GITHUB_STEP_SUMMARY
+            echo "Results: k6-results-performance.json" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Load tests skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Job 6: Quality Gate
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Check quality gates
+        run: |
+          # Check unit test coverage
+          if [ -f coverage/coverage-summary.json ]; then
+            COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.statements.pct')
+            if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+              echo "❌ Coverage below 80%: $COVERAGE%"
+              exit 1
+            fi
+            echo "✅ Unit test coverage: $COVERAGE%"
+          fi
+          
+          # E2E test success check
+          # This is handled by the needs dependency
+          echo "✅ All quality gates passed"
+
+jobs:
+  scheduled-load-test:
+    name: Scheduled Load Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install k6
+        run: |
+          curl -sL https://github.com/grafana/k6/releases/download/v0.55.0/k6-v0.55.0-linux-amd64.tar.gz | tar xz
+          sudo mv k6-v0.55.0-linux-amd64/k6 /usr/local/bin
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Start server
+        run: npm run start &
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Wait for server
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      
+      - name: Run Full Load Test Suite
+        run: |
+          k6 run --out json=k6-results.json k6/load-tests.js -e SCENARIO=performance
+      
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-load-results
+          path: k6-results.json
+          retention-days: 30
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Load Test Results\n\nLoad test completed. Check artifacts for detailed metrics.'
+            })

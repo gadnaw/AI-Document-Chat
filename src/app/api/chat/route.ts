@@ -115,7 +115,17 @@ export async function POST(req: Request) {
     }
 
     // 5. Assemble system prompt with context and create citations
-    const citations: Citation[] = retrievalResult.results.map((result, index) => ({
+    // Filter and rank citations based on quality thresholds
+    const MIN_CITATION_THRESHOLD = 0.75; // Minimum similarity score for citation
+    const MAX_CITATIONS = 5; // Maximum number of citations to include
+    
+    // Filter retrieval results by quality threshold
+    const qualityResults = retrievalResult.results
+      .filter(result => result.similarityScore >= MIN_CITATION_THRESHOLD)
+      .slice(0, MAX_CITATIONS);
+    
+    // Create citations from quality-filtered results
+    const citations: Citation[] = qualityResults.map((result, index) => ({
       documentId: result.documentId,
       chunkId: result.id,
       documentName: result.documentName,
@@ -124,13 +134,13 @@ export async function POST(req: Request) {
       preview: result.content.substring(0, 200) + (result.content.length > 200 ? '...' : ''),
     }));
 
-    const contextChunks = retrievalResult.results
+    const contextChunks = qualityResults
       .map((result, index) => 
         `[Source ${index + 1}] ${result.documentName} (Page ${result.pageNumber || 'N/A'}):\n${result.content}`
       )
       .join('\n\n');
 
-    const systemPrompt = `You are an AI assistant helping users understand their uploaded documents.
+    const systemPrompt = `You are an AI assistant helping users understand your uploaded documents.
     
 Based on the following document excerpts, answer the user's question. Cite your sources using the format [Source N] where N corresponds to the source number.
 
@@ -139,8 +149,10 @@ ${contextChunks || 'No relevant documents found.'}
 
 ## Guidelines
 - Answer based primarily on the provided document context
+- Only cite sources that directly support your claims
 - If the context doesn't contain enough information, say so clearly
 - Cite sources using [Source N] format for factual claims
+- Avoid citing sources that don't directly support the answer
 - Be concise and helpful
 - Format responses clearly with proper spacing`;
 

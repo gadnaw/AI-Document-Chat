@@ -1,0 +1,502 @@
+[
+  {
+    "queryId": "q001",
+    "query": "What is machine learning and how does it work?",
+    "category": "conceptual",
+    "difficulty": "easy",
+    "expectedIntents": ["definition", "explanation"],
+    "keywords": ["machine learning", "definition", "how it works"],
+    "groundTruthDocIds": ["doc_ml_intro", "doc_ml_algorithms"],
+    "notes": "Basic conceptual question about ML"
+  },
+  {
+    "queryId": "q002",
+    "query": "Compare supervised vs unsupervised learning approaches",
+    "category": "comparative",
+    "difficulty": "medium",
+    "expectedIntents": ["comparison", "analysis"],
+    "keywords": ["supervised", "unsupervised", "comparison"],
+    "groundTruthDocIds": ["doc_supervised", "doc_unsupervised", "doc_ml_comparison"],
+    "notes": "Requires documents covering both learning paradigms"
+  },
+  {
+    "queryId": "q003",
+    "query": "What are the key differences between neural networks and decision trees?",
+    "category": "comparative",
+    "difficulty": "medium",
+    "expectedIntents": ["comparison", "analysis"],
+    "keywords": ["neural networks", "decision trees", "differences"],
+    "groundTruthDocIds": ["doc_neural_nets", "doc_decision_trees", "doc_ml_comparison"],
+    "notes": "Technical comparison question"
+  },
+  {
+    "queryId": "q004",
+    "query": "Explain how gradient descent optimization works in training neural networks",
+    "category": "conceptual",
+    "difficulty": "hard",
+    "expectedIntents": ["explanation", "technical_details"],
+    "keywords": ["gradient descent", "optimization", "neural networks", "training"],
+    "groundTruthDocIds": ["doc_gradient_descent", "doc_backpropagation", "doc_neural_nets"],
+    "notes": "Deep technical question requiring detailed explanation"
+  },
+  {
+    "queryId": "q005",
+    "query": "What preprocessing steps are recommended for text data before feeding into NLP models?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["guidelines", "best_practices"],
+    "keywords": ["text preprocessing", "NLP", "data preparation"],
+    "groundTruthDocIds": ["doc_text_preprocessing", "doc_nlp_basics", "doc_feature_engineering"],
+    "notes": "Practical question about data preparation"
+  },
+  {
+    "queryId": "q006",
+    "query": "List the main applications of natural language processing in industry",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["list", "applications"],
+    "keywords": ["NLP applications", "industry use cases"],
+    "groundTruthDocIds": ["doc_nlp_applications", "doc_industry_ai"],
+    "notes": "Broad question about NLP applications"
+  },
+  {
+    "queryId": "q007",
+    "query": "How does transformer architecture differ from RNNs in handling sequential data?",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "technical_explanation"],
+    "keywords": ["transformer", "RNN", "sequential", "attention mechanism"],
+    "groundTruthDocIds": ["doc_transformers", "doc_rnn", "doc_attention"],
+    "notes": "Advanced deep learning comparison"
+  },
+  {
+    "queryId": "q008",
+    "query": "What are the ethical considerations when deploying AI systems in healthcare?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["discussion", "ethical_analysis"],
+    "keywords": ["AI ethics", "healthcare", "ethical considerations"],
+    "groundTruthDocIds": ["doc_ai_ethics", "doc_healthcare_ai", "doc_bias_ai"],
+    "notes": "Ethics-focused question"
+  },
+  {
+    "queryId": "q009",
+    "query": "Explain the concept of overfitting and techniques to prevent it",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["explanation", "solutions"],
+    "keywords": ["overfitting", "regularization", "prevention techniques"],
+    "groundTruthDocIds": ["doc_overfitting", "doc_regularization", "doc_model_selection"],
+    "notes": "Common ML concept with practical solutions"
+  },
+  {
+    "queryId": "q010",
+    "query": "What is the role of attention mechanisms in modern deep learning models?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["explanation", "role_analysis"],
+    "keywords": ["attention mechanism", "deep learning", "transformers"],
+    "groundTruthDocIds": ["doc_attention", "doc_transformers", "doc_neural_nets"],
+    "notes": "Focus on attention mechanism importance"
+  },
+  {
+    "queryId": "q011",
+    "query": "How do you evaluate the performance of a classification model?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["methods", "metrics"],
+    "keywords": ["classification metrics", "evaluation", "performance"],
+    "groundTruthDocIds": ["doc_classification_metrics", "doc_model_evaluation"],
+    "notes": "Standard evaluation question"
+  },
+  {
+    "queryId": "q012",
+    "query": "What are the advantages and disadvantages of using large language models?",
+    "category": "comparative",
+    "difficulty": "medium",
+    "expectedIntents": ["pros_cons", "analysis"],
+    "keywords": ["LLM advantages", "LLM disadvantages", "large language models"],
+    "groundTruthDocIds": ["doc_llm_overview", "doc_llm_pros_cons", "doc_model_comparison"],
+    "notes": "Balanced analysis question"
+  },
+  {
+    "queryId": "q013",
+    "query": "Explain the difference between batch normalization and layer normalization",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "technical_details"],
+    "keywords": ["batch normalization", "layer normalization", "differences"],
+    "groundTruthDocIds": ["doc_batch_norm", "doc_layer_norm", "doc_normalization"],
+    "notes": "Deep technical normalization comparison"
+  },
+  {
+    "queryId": "q014",
+    "query": "What techniques are used to reduce latency in real-time AI inference?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["techniques", "optimization"],
+    "keywords": ["latency optimization", "inference", "real-time AI"],
+    "groundTruthDocIds": ["doc_inference_optimization", "doc_model_compression", "doc_latency_reduction"],
+    "notes": "Performance optimization focus"
+  },
+  {
+    "queryId": "q015",
+    "query": "How does reinforcement learning work in training agents for game playing?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["explanation", "game_ai"],
+    "keywords": ["reinforcement learning", "game playing", "agents"],
+    "groundTruthDocIds": ["doc_rl_basics", "doc_rl_games", "doc_rl_algorithms"],
+    "notes": "RL application question"
+  },
+  {
+    "queryId": "q016",
+    "query": "What are the main challenges in deploying ML models to production?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["challenges", "deployment"],
+    "keywords": ["ML deployment challenges", "production ML"],
+    "groundTruthDocIds": ["doc_ml_ops", "doc_deployment_challenges", "doc_production_ml"],
+    "notes": "MLOps focus"
+  },
+  {
+    "queryId": "q017",
+    "query": "Explain the concept of transfer learning and its benefits",
+    "category": "conceptual",
+    "difficulty": "easy",
+    "expectedIntents": ["explanation", "benefits"],
+    "keywords": ["transfer learning", "benefits", "pretraining"],
+    "groundTruthDocIds": ["doc_transfer_learning", "doc_pretrained_models"],
+    "notes": "Transfer learning basics"
+  },
+  {
+    "queryId": "q018",
+    "query": "What security concerns should be addressed when building AI-powered applications?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["concerns", "security"],
+    "keywords": ["AI security", "security concerns", "adversarial attacks"],
+    "groundTruthDocIds": ["doc_ai_security", "doc_adversarial_ml", "doc_secure_ai"],
+    "notes": "Security-focused question"
+  },
+  {
+    "queryId": "q019",
+    "query": "Compare different types of recurrent neural networks (LSTM, GRU, vanilla RNN)",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "analysis"],
+    "keywords": ["LSTM", "GRU", "RNN", "comparison"],
+    "groundTruthDocIds": ["doc_lstm", "doc_gru", "doc_rnn", "doc_rnn_comparison"],
+    "notes": "RNN architecture comparison"
+  },
+  {
+    "queryId": "q020",
+    "query": "How do you handle class imbalance in machine learning classification problems?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["techniques", "solutions"],
+    "keywords": ["class imbalance", "handling techniques", "sampling"],
+    "groundTruthDocIds": ["doc_class_imbalance", "doc_sampling_techniques", "doc_metric_selection"],
+    "notes": "Practical handling of imbalanced data"
+  },
+  {
+    "queryId": "q021",
+    "query": "What is the role of embeddings in natural language processing?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["role_explanation", "concepts"],
+    "keywords": ["embeddings", "NLP", "word embeddings"],
+    "groundTruthDocIds": ["doc_word_embeddings", "doc_embeddings_overview", "doc_nlp_deep_learning"],
+    "notes": "Embeddings importance in NLP"
+  },
+  {
+    "queryId": "q022",
+    "query": "Explain the training process for a convolutional neural network for image classification",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["process_explanation", "training"],
+    "keywords": ["CNN training", "image classification", "convolutional networks"],
+    "groundTruthDocIds": ["doc_cnn_basics", "doc_cnn_training", "doc_image_classification"],
+    "notes": "CNN training overview"
+  },
+  {
+    "queryId": "q023",
+    "query": "What are the key components of a successful data science project?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["components", "best_practices"],
+    "keywords": ["data science project", "key components", "workflow"],
+    "groundTruthDocIds": ["doc_data_science_workflow", "doc_ds_best_practices"],
+    "notes": "Project methodology question"
+  },
+  {
+    "queryId": "q024",
+    "query": "How does explainable AI (XAI) help in building trust in machine learning systems?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["explanation", "trust"],
+    "keywords": ["explainable AI", "XAI", "interpretability", "trust"],
+    "groundTruthDocIds": ["doc_xai", "doc_model_interpretability", "doc_trust_ai"],
+    "notes": "AI transparency focus"
+  },
+  {
+    "queryId": "q025",
+    "query": "What are the differences between BERT and GPT models in natural language understanding?",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "architectural_analysis"],
+    "keywords": ["BERT", "GPT", "differences", "NLP"],
+    "groundTruthDocIds": ["doc_bert", "doc_gpt", "doc_transformer_models", "doc_llm_comparison"],
+    "notes": "Major LLM architecture comparison"
+  },
+  {
+    "queryId": "q026",
+    "query": "How do you detect and handle outliers in a dataset?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["methods", "techniques"],
+    "keywords": ["outlier detection", "outlier handling", "data cleaning"],
+    "groundTruthDocIds": ["doc_outlier_detection", "doc_data_cleaning"],
+    "notes": "Data preprocessing question"
+  },
+  {
+    "queryId": "q027",
+    "query": "What is the importance of feature engineering in machine learning pipelines?",
+    "category": "conceptual",
+    "difficulty": "easy",
+    "expectedIntents": ["importance", "explanation"],
+    "keywords": ["feature engineering", "importance", "ML pipelines"],
+    "groundTruthDocIds": ["doc_feature_engineering", "doc_feature_selection"],
+    "notes": "Feature engineering fundamentals"
+  },
+  {
+    "queryId": "q028",
+    "query": "Explain the concept of model distillation and when it should be used",
+    "category": "conceptual",
+    "difficulty": "hard",
+    "expectedIntents": ["explanation", "use_cases"],
+    "keywords": ["model distillation", "knowledge distillation", "compression"],
+    "groundTruthDocIds": ["doc_model_distillation", "doc_model_compression", "doc_distillation_techniques"],
+    "notes": "Advanced model compression technique"
+  },
+  {
+    "queryId": "q029",
+    "query": "What are the main approaches to semi-supervised learning?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["approaches", "methods"],
+    "keywords": ["semi-supervised learning", "approaches", "techniques"],
+    "groundTruthDocIds": ["doc_semi_supervised", "doc_ssl_techniques", "doc_learning_paradigms"],
+    "notes": "Learning paradigm overview"
+  },
+  {
+    "queryId": "q030",
+    "query": "How do you choose between different activation functions in neural networks?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["selection_criteria", "guidelines"],
+    "keywords": ["activation functions", "selection", "neural networks"],
+    "groundTruthDocIds": ["doc_activation_functions", "doc_nn_architecture", "doc_nonlinearity"],
+    "notes": "Neural network design question"
+  },
+  {
+    "queryId": "q031",
+    "query": "What are the key metrics for evaluating unsupervised learning algorithms?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["metrics", "evaluation"],
+    "keywords": ["unsupervised metrics", "clustering evaluation", "evaluation"],
+    "groundTruthDocIds": ["doc_unsupervised_metrics", "doc_clustering_eval", "doc_evaluation_metrics"],
+    "notes": "Unsupervised ML metrics"
+  },
+  {
+    "queryId": "q032",
+    "query": "Explain the differences between parametric and non-parametric models",
+    "category": "comparative",
+    "difficulty": "medium",
+    "expectedIntents": ["comparison", "concepts"],
+    "keywords": ["parametric", "non-parametric", "differences", "models"],
+    "groundTruthDocIds": ["doc_parametric_models", "doc_nonparametric_models", "doc_model_comparison"],
+    "notes": "Model classification comparison"
+  },
+  {
+    "queryId": "q033",
+    "query": "What techniques can be used to improve the robustness of neural networks?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["techniques", "improvement"],
+    "keywords": ["robustness", "neural networks", "improvement techniques"],
+    "groundTruthDocIds": ["doc_robust_ml", "doc_adversarial_training", "doc_regularization_techniques"],
+    "notes": "Model robustness focus"
+  },
+  {
+    "queryId": "q034",
+    "query": "How does multi-task learning differ from transfer learning?",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "analysis"],
+    "keywords": ["multi-task learning", "transfer learning", "differences"],
+    "groundTruthDocIds": ["doc_multi_task", "doc_transfer_learning", "doc_learning_paradigms"],
+    "notes": "Learning paradigm comparison"
+  },
+  {
+    "queryId": "q035",
+    "query": "What are the main challenges in natural language generation tasks?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["challenges", "NLG"],
+    "keywords": ["NLG challenges", "text generation", "generation problems"],
+    "groundTruthDocIds": ["doc_nlg_challenges", "doc_text_generation", "doc_generation_issues"],
+    "notes": "Text generation challenges"
+  },
+  {
+    "queryId": "q036",
+    "query": "Explain the role of hyperparameters in machine learning model performance",
+    "category": "conceptual",
+    "difficulty": "easy",
+    "expectedIntents": ["role_explanation", "hyperparameters"],
+    "keywords": ["hyperparameters", "model performance", "tuning"],
+    "groundTruthDocIds": ["doc_hyperparameters", "doc_hyperparameter_tuning", "doc_model_selection"],
+    "notes": "Hyperparameter importance"
+  },
+  {
+    "queryId": "q037",
+    "query": "What are the advantages of using ensemble methods in machine learning?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["advantages", "ensemble"],
+    "keywords": ["ensemble methods", "advantages", "bagging", "boosting"],
+    "groundTruthDocIds": ["doc_ensemble_methods", "doc_bagging", "doc_boosting"],
+    "notes": "Ensemble benefits"
+  },
+  {
+    "queryId": "q038",
+    "query": "How do you detect data drift and model drift in production ML systems?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["detection_methods", "monitoring"],
+    "keywords": ["data drift", "model drift", "detection", "monitoring"],
+    "groundTruthDocIds": ["doc_drift_detection", "doc_ml_monitoring", "doc_production_ml"],
+    "notes": "MLOps monitoring focus"
+  },
+  {
+    "queryId": "q039",
+    "query": "What is the difference between因果关系分析 and correlation in data analysis?",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["comparison", "analysis"],
+    "keywords": ["causation", "correlation", "analysis", "differences"],
+    "groundTruthDocIds": ["doc_causation", "doc_correlation", "doc_statistical_analysis"],
+    "notes": "Statistical analysis concepts"
+  },
+  {
+    "queryId": "q040",
+    "query": "Explain the training-inference gap in deploying deep learning models",
+    "category": "conceptual",
+    "difficulty": "hard",
+    "expectedIntents": ["explanation", "deployment"],
+    "keywords": ["training-inference gap", "deployment challenges", "deep learning"],
+    "groundTruthDocIds": ["doc_deployment_challenges", "doc_inference_optimization", "doc_production_ml"],
+    "notes": "Deployment challenges"
+  },
+  {
+    "queryId": "q041",
+    "query": "What are the key considerations when choosing between GPU and CPU for ML workloads?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["considerations", "hardware"],
+    "keywords": ["GPU vs CPU", "ML hardware", "workload selection"],
+    "groundTruthDocIds": ["doc_ml_hardware", "doc_gpu_comparison", "doc_compute_selection"],
+    "notes": "Hardware selection"
+  },
+  {
+    "queryId": "q042",
+    "query": "How do attention weights in transformer models provide interpretability?",
+    "category": "conceptual",
+    "difficulty": "hard",
+    "expectedIntents": ["interpretability", "explanation"],
+    "keywords": ["attention weights", "interpretability", "transformers"],
+    "groundTruthDocIds": ["doc_attention_interpretation", "doc_transformer_analysis", "doc_xai"],
+    "notes": "Model interpretability"
+  },
+  {
+    "queryId": "q043",
+    "query": "What are the main applications of generative adversarial networks (GANs)?",
+    "category": "factual",
+    "difficulty": "easy",
+    "expectedIntents": ["applications", "GANs"],
+    "keywords": ["GAN applications", "generative models", "use cases"],
+    "groundTruthDocIds": ["doc_gan_applications", "doc_generative_models"],
+    "notes": "GAN use cases"
+  },
+  {
+    "queryId": "q044",
+    "query": "Explain the concept of curriculum learning in training neural networks",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["explanation", "training"],
+    "keywords": ["curriculum learning", "training strategy", "progressive learning"],
+    "groundTruthDocIds": ["doc_curriculum_learning", "doc_training_strategies", "doc_nn_training"],
+    "notes": "Training methodology"
+  },
+  {
+    "queryId": "q045",
+    "query": "What are the challenges and solutions in federated learning?",
+    "category": "comparative",
+    "difficulty": "hard",
+    "expectedIntents": ["challenges", "solutions", "federated"],
+    "keywords": ["federated learning", "challenges", "solutions", "privacy"],
+    "groundTruthDocIds": ["doc_federated_learning", "doc_federated_challenges", "doc_privacy_ml"],
+    "notes": "Privacy-preserving ML"
+  },
+  {
+    "queryId": "q046",
+    "query": "How do you design effective human-AI collaboration systems?",
+    "category": "factual",
+    "difficulty": "medium",
+    "expectedIntents": ["design_principles", "collaboration"],
+    "keywords": ["human-AI collaboration", "design", "interaction"],
+    "groundTruthDocIds": ["doc_human_ai", "doc_ai_collaboration", "doc_interactive_ml"],
+    "notes": "Human-centered AI design"
+  },
+  {
+    "queryId": "q047",
+    "query": "What is the role of normalization in training deep neural networks?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["role_explanation", "normalization"],
+    "keywords": ["normalization", "deep learning", "training stability"],
+    "groundTruthDocIds": ["doc_normalization", "doc_batch_norm", "doc_training_stability"],
+    "notes": "Training optimization"
+  },
+  {
+    "queryId": "q048",
+    "query": "Explain the differences between beam search and greedy decoding in text generation",
+    "category": "comparative",
+    "difficulty": "medium",
+    "expectedIntents": ["comparison", "decoding"],
+    "keywords": ["beam search", "greedy decoding", "text generation", "differences"],
+    "groundTruthDocIds": ["doc_decoding_strategies", "doc_text_generation", "doc_generation_methods"],
+    "notes": "Generation decoding comparison"
+  },
+  {
+    "queryId": "q049",
+    "query": "What are the ethical implications of using AI for hiring decisions?",
+    "category": "conceptual",
+    "difficulty": "medium",
+    "expectedIntents": ["ethics", "implications", "hiring"],
+    "keywords": ["AI hiring", "ethical implications", "bias", "fairness"],
+    "groundTruthDocIds": ["doc_ai_ethics", "doc_ai_hiring", "doc_fairness_ai"],
+    "notes": "AI ethics in HR"
+  },
+  {
+    "queryId": "q050",
+    "query": "How do vision-language models combine visual and textual understanding?",
+    "category": "conceptual",
+    "difficulty": "hard",
+    "expectedIntents": ["explanation", "multimodal"],
+    "keywords": ["vision-language models", "multimodal", "visual understanding"],
+    "groundTruthDocIds": ["doc_vision_language", "doc_multimodal_models", "doc_clip_and_beyond"],
+    "notes": "Multimodal AI explanation"
+  }
+]
