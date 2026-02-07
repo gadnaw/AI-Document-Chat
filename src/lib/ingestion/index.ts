@@ -55,6 +55,10 @@ export async function processDocument(
     generateEmbeddings = true,
   } = options;
 
+  // Import PDF and embeddings utilities locally to avoid circular dependencies
+  const { isPDFFile, extractTextFromPDF, splitTextIntoChunks, formatFileSize } = await import('./pdf');
+  const { embedDocumentChunks } = await import('./embeddings');
+
   // Validate file
   if (!isPDFFile(file)) {
     throw new Error(`Invalid file type: ${file.type}. Only PDF files are supported.`);

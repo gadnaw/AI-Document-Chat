@@ -5,15 +5,14 @@
 
 import { PDFProcessingResult } from './types';
 
+import pdfParse from 'pdf-parse';
+
 /**
  * Extract text content from a PDF file
  * @param file - File object or buffer containing PDF data
  * @returns Promise resolving to extracted text and metadata
  */
 export async function extractTextFromPDF(file: File | Buffer): Promise<PDFProcessingResult> {
-  // Dynamic import of pdf-parse to handle browser/server compatibility
-  const pdfParse = (await import('pdf-parse')).default;
-
   const buffer = file instanceof File
     ? await file.arrayBuffer().then(buffer => Buffer.from(buffer))
     : file;
@@ -70,7 +69,7 @@ export function cleanExtractedText(text: string): string {
 export function splitTextIntoChunks(
   text: string,
   chunkSize: number = 1000,
-  chunkOverlap: number := 200
+  chunkOverlap: number = 200
 ): string[] {
   if (!text || text.length === 0) return [];
 
