@@ -1,8 +1,9 @@
-import { streamText } from 'ai';
+import { streamText, StreamData } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { getSession } from '@/lib/auth-utils';
 import { retrieveRelevantChunks } from '@/lib/retrieval/search';
 import { createClient } from '@supabase/supabase-js';
+import { persistMessage, updateConversationTitle } from '@/lib/persistence/message-persistence';
 
 // Initialize Supabase client for message history
 const supabase = createClient(
@@ -103,6 +104,10 @@ ${contextChunks || 'No relevant documents found.'}
 - Format responses clearly with proper spacing`;
 
     // 6. Stream response using Vercel AI SDK with citation data
+    // Capture assistant response for persistence
+    let assistantResponse = '';
+    let currentConversationId = conversationId;
+
     const result = streamText({
       model: openai('gpt-4o'),
       messages: [
@@ -110,14 +115,69 @@ ${contextChunks || 'No relevant documents found.'}
         { role: 'user', content: message },
       ],
       system: systemPrompt,
+      onFinish: async ({ text, usage, reasoning }) => {
+        assistantResponse = text;
+
+        try {
+          // Save user message
+          const userMessageId = await persistMessage({
+            conversationId: currentConversationId || '',
+            userId: session.user.id,
+            role: 'user',
+            content: message,
+            citations: citations,
+          });
+
+          // If no conversation was provided, get the created conversation ID
+          if (!currentConversationId) {
+            // The persistMessage function should handle this, but just in case
+            const { data: conv } = await supabase
+              .from('messages')
+              .select('conversation_id')
+              .eq('id', userMessageId)
+              .single();
+            
+            if (conv) {
+              currentConversationId = conv.conversation_id;
+            }
+          }
+
+          // Save assistant message with citations
+          await persistMessage({
+            conversationId: currentConversationId,
+            userId: session.user.id,
+            role: 'assistant',
+            content: text,
+            citations: citations,
+            tokenCount: usage?.completionTokens || 0,
+          });
+
+          // Update conversation title if this is the first message
+          if (conversationHistory.length === 0) {
+            await updateConversationTitle(currentConversationId, message);
+          }
+
+          console.log('[chat] Messages persisted successfully');
+        } catch (persistenceError) {
+          console.error('[chat] Error persisting messages:', persistenceError);
+          // Don't fail the request - messages are persisted for UX but not critical
+        }
+      },
     });
 
     // 7. Return streaming response with citations via data channel
-    const dataStream = result.toDataStreamResponse();
+    const dataStream = result.toDataStreamResponse({
+      data: citations.map(citation => ({
+        type: 'citation',
+        documentId: citation.documentId,
+        chunkId: citation.chunkId,
+        documentName: citation.documentName,
+        pageNumber: citation.pageNumber,
+        similarityScore: citation.similarityScore,
+        preview: citation.preview,
+      })),
+    });
 
-    // 8. On finish callback for message persistence with citations
-    // Note: Citations are streamed via data channel to the client
-    
     return dataStream;
 
   } catch (error) {

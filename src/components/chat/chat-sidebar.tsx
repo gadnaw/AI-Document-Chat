@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useAuth } from '@/components/auth-provider'
+import { useConversation, Conversation } from '@/lib/hooks/use-conversation'
 
 interface ChatSidebarProps {
   onSelectConversation: (id: string) => void
@@ -15,27 +16,90 @@ interface ChatSidebarProps {
  * - New conversation button
  * - Conversation list with search
  * - Active conversation indicator
+ * - Delete functionality
  * 
- * Note: Full functionality implemented in 04-w03 (Conversation Persistence)
+ * Full implementation with API integration (04-w03)
  */
 
 export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSidebarProps) {
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
-  const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  
+  const {
+    conversations,
+    loading,
+    error,
+    fetchConversations,
+    createConversation,
+    deleteConversation,
+    currentConversation,
+    loadConversation,
+    isCreating,
+    isDeleting,
+  } = useConversation()
 
-  const handleSelectConversation = (id: string) => {
-    setSelectedId(id)
-    onSelectConversation(id)
-  }
+  // Load conversations on mount
+  useEffect(() => {
+    if (user && !authLoading) {
+      fetchConversations()
+    }
+  }, [user, authLoading, fetchConversations])
 
   // Filter conversations by search query
   const filteredConversations = conversations.filter(conv =>
     conv.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  if (loading) {
+  const handleSelectConversation = useCallback(async (id: string) => {
+    setSelectedId(id)
+    
+    // Load conversation if not already loaded
+    if (currentConversation?.conversation.id !== id) {
+      await loadConversation(id)
+    }
+    
+    onSelectConversation(id)
+  }, [currentConversation, loadConversation, onSelectConversation])
+
+  const handleCreateConversation = useCallback(async () => {
+    // Create a new conversation with auto-generated title
+    const conversation = await createConversation('New Chat')
+    
+    if (conversation) {
+      onNewConversation()
+    }
+  }, [createConversation, onNewConversation])
+
+  const handleDeleteConversation = useCallback(async (id: string) => {
+    const success = await deleteConversation(id)
+    
+    if (success && selectedId === id) {
+      setSelectedId(null)
+      onNewConversation()
+    }
+    
+    setShowDeleteConfirm(null)
+  }, [deleteConversation, selectedId, onNewConversation])
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    
+    return date.toLocaleDateString()
+  }
+
+  if (authLoading) {
     return (
       <div className="p-4 space-y-4">
         <div className="animate-pulse">
@@ -67,13 +131,26 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <button
-          onClick={onNewConversation}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          onClick={handleCreateConversation}
+          disabled={isCreating}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Chat
+          {isCreating ? (
+            <>
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Creating...
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Chat
+            </>
+          )}
         </button>
       </div>
 
@@ -93,6 +170,30 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
         </div>
       </div>
 
+      {/* Error state */}
+      {error && (
+        <div className="mx-4 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{error}</p>
+          <button
+            onClick={() => fetchConversations()}
+            className="mt-2 text-red-700 text-sm underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {loading && (
+        <div className="px-4">
+          <div className="animate-pulse space-y-2">
+            <div className="h-12 bg-gray-200 rounded" />
+            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-10 bg-gray-200 rounded" />
+          </div>
+        </div>
+      )}
+
       {/* Conversation list */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
@@ -102,7 +203,7 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
             </p>
             {!searchQuery && (
               <button
-                onClick={onNewConversation}
+                onClick={handleCreateConversation}
                 className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
                 Start your first chat
@@ -112,7 +213,7 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
         ) : (
           <ul className="space-y-1 px-2">
             {filteredConversations.map((conversation) => (
-              <li key={conversation.id}>
+              <li key={conversation.id} className="relative group">
                 <button
                   onClick={() => handleSelectConversation(conversation.id)}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
@@ -121,16 +222,62 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                 >
-                  <p className="font-medium text-sm truncate">{conversation.title}</p>
+                  <div className="flex items-start justify-between">
+                    <p className="font-medium text-sm truncate flex-1">{conversation.title}</p>
+                    <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">
+                      {formatDate(conversation.updated_at)}
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {new Date(conversation.updated_at).toLocaleDateString()}
+                    {conversation.message_count} message{conversation.message_count !== 1 ? 's' : ''}
                   </p>
+                </button>
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowDeleteConfirm(conversation.id)
+                  }}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete conversation"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Delete conversation?</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              This will permanently delete the conversation and all its messages. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteConversation(showDeleteConfirm)}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* User info footer */}
       <div className="p-4 border-t border-gray-200">
@@ -150,3 +297,4 @@ export function ChatSidebar({ onSelectConversation, onNewConversation }: ChatSid
     </div>
   )
 }
+
