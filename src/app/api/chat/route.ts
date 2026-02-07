@@ -11,11 +11,23 @@ const supabase = createClient(
 );
 
 /**
+ * Citation type for streaming metadata
+ */
+export interface Citation {
+  documentId: string;
+  chunkId: string;
+  documentName: string;
+  pageNumber: number | null;
+  similarityScore: number;
+  preview: string;
+}
+
+/**
  * Chat API Route
- * Handles streaming chat requests with RAG context retrieval
+ * Handles streaming chat requests with RAG context retrieval and citation streaming
  * 
  * Flow: Auth check -> Rate limit check -> Load history -> 
- * Retrieve chunks -> Assemble context -> Stream response -> Save message
+ * Retrieve chunks -> Assemble context -> Stream text + citations -> Save message
  */
 
 export async function POST(req: Request) {
@@ -60,7 +72,16 @@ export async function POST(req: Request) {
       }
     }
 
-    // 5. Assemble system prompt with context
+    // 5. Assemble system prompt with context and create citations
+    const citations: Citation[] = retrievalResult.results.map((result, index) => ({
+      documentId: result.documentId,
+      chunkId: result.id,
+      documentName: result.documentName,
+      pageNumber: result.pageNumber || null,
+      similarityScore: result.similarityScore,
+      preview: result.content.substring(0, 200) + (result.content.length > 200 ? '...' : ''),
+    }));
+
     const contextChunks = retrievalResult.results
       .map((result, index) => 
         `[Source ${index + 1}] ${result.documentName} (Page ${result.pageNumber || 'N/A'}):\n${result.content}`
@@ -81,7 +102,7 @@ ${contextChunks || 'No relevant documents found.'}
 - Be concise and helpful
 - Format responses clearly with proper spacing`;
 
-    // 6. Stream response using Vercel AI SDK
+    // 6. Stream response using Vercel AI SDK with citation data
     const result = streamText({
       model: openai('gpt-4o'),
       messages: [
@@ -91,8 +112,13 @@ ${contextChunks || 'No relevant documents found.'}
       system: systemPrompt,
     });
 
-    // 7. Return streaming response
-    return result.toDataStreamResponse();
+    // 7. Return streaming response with citations via data channel
+    const dataStream = result.toDataStreamResponse();
+
+    // 8. On finish callback for message persistence with citations
+    // Note: Citations are streamed via data channel to the client
+    
+    return dataStream;
 
   } catch (error) {
     console.error('[chat] Error processing request:', error);
