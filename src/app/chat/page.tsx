@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ChatSidebar } from '@/components/chat/chat-sidebar'
 import { ChatArea } from '@/components/chat/chat-area'
 import { CitationPanel } from '@/components/chat/citation-panel'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { useConversation } from '@/lib/hooks/use-conversation'
 
 /**
  * Chat Page
@@ -15,12 +17,56 @@ import { ErrorBoundary } from '@/components/error-boundary'
  * - Citation panel: Source document references (collapsible)
  * 
  * Responsive design with mobile sidebar toggle
+ * URL-based conversation state for sharing and bookmarking (04-w03)
  */
 
 export default function ChatPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [showSidebar, setShowSidebar] = useState(true)
   const [showCitations, setShowCitations] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
+  
+  const { createConversation } = useConversation()
+
+  // Load conversation ID from URL on mount
+  useEffect(() => {
+    const urlConversationId = searchParams.get('conversation')
+    if (urlConversationId) {
+      setConversationId(urlConversationId)
+    }
+  }, [searchParams])
+
+  // Handle conversation selection
+  const handleSelectConversation = useCallback(async (id: string) => {
+    setConversationId(id)
+    
+    // Update URL without full page reload
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('conversation', id)
+    router.push(`?${params.toString()}`, { scroll: false })
+    
+    // Close sidebar on mobile after selection
+    if (window.innerWidth < 1024) {
+      setShowSidebar(false)
+    }
+  }, [router, searchParams])
+
+  // Handle new conversation creation
+  const handleNewConversation = useCallback(async () => {
+    // Create new conversation
+    const conversation = await createConversation('New Chat')
+    
+    if (conversation) {
+      const newConversationId = conversation.id
+      setConversationId(newConversationId)
+      
+      // Update URL
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('conversation', newConversationId)
+      router.push(`?${params.toString()}`, { scroll: false })
+    }
+  }, [createConversation, router, searchParams])
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -43,16 +89,8 @@ export default function ChatPage() {
         `}
       >
         <ChatSidebar
-          onSelectConversation={(id) => {
-            setConversationId(id)
-            // Close sidebar on mobile after selection
-            if (window.innerWidth < 1024) {
-              setShowSidebar(false)
-            }
-          }}
-          onNewConversation={() => {
-            setConversationId(null)
-          }}
+          onSelectConversation={handleSelectConversation}
+          onNewConversation={handleNewConversation}
         />
       </aside>
 
