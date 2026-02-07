@@ -1,186 +1,289 @@
 /**
- * Environment validation utilities for ensuring proper configuration
- * before application startup and runtime operations.
+ * Client-side PDF file validation utilities
+ * Validates files before upload using extension, MIME type, and magic bytes
  */
 
-/**
- * Required environment variables for Supabase authentication and database access.
- */
-export const REQUIRED_ENV_VARS = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'SUPABASE_SERVICE_ROLE_KEY',
-] as const
+import type { ValidationResult } from '@/types/upload'
 
 /**
- * Optional environment variables with defaults.
+ * Maximum allowed file size in bytes (50MB)
  */
-export const OPTIONAL_ENV_VARS = {
-  NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-  NEXT_PUBLIC_APP_NAME: 'AI Document Chat',
-} as const
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 
 /**
- * Validates that required Supabase environment variables are set and properly formatted.
+ * PDF magic bytes signature
+ */
+const PDF_MAGIC_BYTES = new Uint8Array([0x25, 0x50, 0x44, 0x46]) // "%PDF"
+
+/**
+ * Validates a single file for PDF upload requirements
  * 
- * @throws Error if required variables are missing or improperly formatted
- * @returns Object with validated environment variables
+ * @param file - The file to validate
+ * @returns ValidationResult with valid status and error message if invalid
  * 
  * @example
  * ```typescript
- * const env = validateEnv()
- * console.log('Supabase URL:', env.NEXT_PUBLIC_SUPABASE_URL)
- * ```
- */
-export function validateEnv() {
-  const errors: string[] = []
-
-  // Check required Supabase variables
-  for (const varName of REQUIRED_ENV_VARS) {
-    const value = process.env[varName]
-    
-    if (!value) {
-      errors.push(`Missing required environment variable: ${varName}`)
-      continue
-    }
-
-    // Validate Supabase URL format
-    if (varName === 'NEXT_PUBLIC_SUPABASE_URL') {
-      try {
-        const url = new URL(value)
-        if (url.protocol !== 'https:' && url.hostname !== 'localhost') {
-          errors.push(
-            `NEXT_PUBLIC_SUPABASE_URL must use HTTPS protocol (or localhost for development). Got: ${value}`
-          )
-        }
-        if (!url.hostname.includes('supabase.co') && url.hostname !== 'localhost') {
-          errors.push(
-            `NEXT_PUBLIC_SUPABASE_URL should be a Supabase project URL. Got: ${value}`
-          )
-        }
-      } catch {
-        errors.push(`NEXT_PUBLIC_SUPABASE_URL is not a valid URL: ${value}`)
-      }
-    }
-
-    // Validate anon key format (JWT starts with eyJ)
-    if (varName === 'NEXT_PUBLIC_SUPABASE_ANON_KEY') {
-      if (!value.startsWith('eyJ')) {
-        errors.push(
-          `NEXT_PUBLIC_SUPABASE_ANON_KEY should be a JWT token starting with 'eyJ'. Got: ${value.substring(0, 10)}...`
-        )
-      }
-    }
-
-    // Service role key should also be a JWT
-    if (varName === 'SUPABASE_SERVICE_ROLE_KEY') {
-      if (!value.startsWith('eyJ')) {
-        errors.push(
-          `SUPABASE_SERVICE_ROLE_KEY should be a JWT token starting with 'eyJ'. Got: ${value.substring(0, 10)}...`
-        )
-      }
-    }
-  }
-
-  // Check OpenAI API key if provided
-  const openaiKey = process.env.OPENAI_API_KEY
-  if (openaiKey && !openaiKey.startsWith('sk-')) {
-    errors.push(
-      `OPENAI_API_KEY should start with 'sk-' for OpenAI API keys. Got: ${openaiKey.substring(0, 10)}...`
-    )
-  }
-
-  // Report all errors at once
-  if (errors.length > 0) {
-    const errorMessage = [
-      '❌ Environment validation failed:',
-      '',
-      ...errors.map(err => `  • ${err}`),
-      '',
-      'Please configure your .env.local file with the correct values.',
-      'See .env.local.example for the required format.',
-    ].join('\n')
-
-    throw new Error(errorMessage)
-  }
-
-  return {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY || undefined,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || OPTIONAL_ENV_VARS.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || OPTIONAL_ENV_VARS.NEXT_PUBLIC_APP_NAME,
-  }
-}
-
-/**
- * Check if running in browser environment.
- * Prevents server-only environment variables from leaking to client bundles.
- * 
- * @returns true if running in browser, false if on server
- * 
- * @example
- * ```typescript
- * if (isBrowser()) {
- *   // Safe to access NEXT_PUBLIC_* variables
+ * const result = validateFile(selectedFile)
+ * if (!result.valid) {
+ *   console.error('Validation failed:', result.error)
+ * } else {
+ *   console.log('File hash:', result.sha256)
  * }
  * ```
  */
-export function isBrowser(): boolean {
-  return typeof window !== 'undefined'
+export async function validateFile(file: File): Promise<ValidationResult> {
+  // Check file extension first (fast fail)
+  const extensionResult = validateExtension(file.name)
+  if (!extensionResult.valid) {
+    return extensionResult
+  }
+
+  // Check MIME type
+  const mimeResult = validateMimeType(file.type)
+  if (!mimeResult.valid) {
+    return mimeResult
+  }
+
+  // Check file size
+  const sizeResult = validateFileSize(file.size)
+  if (!sizeResult.valid) {
+    return sizeResult
+  }
+
+  // Verify magic bytes (handles spoofed extensions)
+  const magicResult = await validateMagicBytes(file)
+  if (!magicResult.valid) {
+    return magicResult
+  }
+
+  // Calculate SHA-256 hash for duplicate detection
+  const sha256 = await generateFileHash(file)
+
+  return {
+    valid: true,
+    sha256,
+  }
 }
 
 /**
- * Validates a single environment variable.
- * Useful for runtime validation of dynamic values.
+ * Validates multiple files and separates valid from invalid
  * 
- * @param name - Environment variable name
- * @param value - Value to validate
- * @param type - Expected type of value
- * @returns Validation result with success status and error message if failed
+ * @param files - Array of files to validate
+ * @returns Object with arrays of valid and invalid files with their errors
+ * 
+ * @example
+ * ```typescript
+ * const { valid, invalid } = await validateMultipleFiles(fileList)
+ * console.log(`Valid: ${valid.length}, Invalid: ${invalid.length}`)
+ * invalid.forEach(({ file, error }) => {
+ *   console.error(`${file.name}: ${error}`)
+ * })
+ * ```
  */
-export function validateEnvVar(
-  name: string,
-  value: string | undefined,
-  type: 'url' | 'jwt' | 'apiKey' | 'required'
-): { valid: boolean; error?: string } {
-  if (type === 'required') {
-    if (!value) {
-      return { valid: false, error: `${name} is required` }
+export async function validateMultipleFiles(
+  files: File[]
+): Promise<{ valid: File[]; invalid: { file: File; error: string }[] }> {
+  const valid: File[] = []
+  const invalid: { file: File; error: string }[] = []
+
+  for (const file of files) {
+    const result = await validateFile(file)
+    if (result.valid) {
+      valid.push(file)
+    } else {
+      invalid.push({
+        file,
+        error: result.error || 'Unknown validation error',
+      })
     }
-    return { valid: true }
   }
 
-  if (!value) {
-    // For non-required types, undefined is acceptable
-    return { valid: true }
+  return { valid, invalid }
+}
+
+/**
+ * Validates file extension (case-insensitive .pdf check)
+ */
+function validateExtension(filename: string): ValidationResult {
+  const pdfRegex = /\.pdf$/i
+  if (!pdfRegex.test(filename)) {
+    const baseName = filename.split('/').pop()?.split('\\').pop() || filename
+    return {
+      valid: false,
+      error: `'${baseName}' was rejected. Only PDF files under 50MB are supported.`,
+    }
   }
+  return { valid: true }
+}
 
-  switch (type) {
-    case 'url':
-      try {
-        const url = new URL(value)
-        if (url.protocol !== 'https:' && url.hostname !== 'localhost') {
-          return { valid: false, error: `${name} must use HTTPS` }
-        }
-      } catch {
-        return { valid: false, error: `${name} is not a valid URL` }
-      }
-      break
+/**
+ * Validates MIME type is application/pdf
+ */
+function validateMimeType(mimeType: string): ValidationResult {
+  // Some browsers report different MIME types for PDFs
+  const allowedMimeTypes = [
+    'application/pdf',
+    'application/x-pdf',
+    'application/acrobat',
+    'applications/pdf',
+    'text/pdf',
+    'text/x-pdf',
+  ]
 
-    case 'jwt':
-      if (!value.startsWith('eyJ')) {
-        return { valid: false, error: `${name} must be a JWT token` }
-      }
-      break
-
-    case 'apiKey':
-      if (!value.startsWith('sk-')) {
-        return { valid: false, error: `${name} should be an OpenAI API key starting with 'sk-'` }
-      }
-      break
+  if (!allowedMimeTypes.includes(mimeType)) {
+    return {
+      valid: false,
+      error: `File type '${mimeType}' is not supported. Only PDF files are allowed.`,
+    }
   }
 
   return { valid: true }
+}
+
+/**
+ * Validates file size is under 50MB
+ */
+function validateFileSize(size: number): ValidationResult {
+  if (size > MAX_FILE_SIZE) {
+    const sizeMB = (size / (1024 * 1024)).toFixed(1)
+    return {
+      valid: false,
+      error: `'${sizeMB}MB' exceeds the 50MB size limit.`,
+    }
+  }
+
+  // Also check for zero or negative sizes
+  if (size <= 0) {
+    return {
+      valid: false,
+      error: 'File appears to be empty or invalid.',
+    }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Validates PDF magic bytes signature
+ * Reads first 4 bytes to verify PDF structure
+ */
+async function validateMagicBytes(file: File): Promise<ValidationResult> {
+  try {
+    // Read only first 4 bytes for magic bytes check
+    const slice = file.slice(0, 4)
+    const buffer = await slice.arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+
+    // Check each byte matches PDF signature
+    for (let i = 0; i < PDF_MAGIC_BYTES.length; i++) {
+      if (bytes[i] !== PDF_MAGIC_BYTES[i]) {
+        const baseName = file.name.split('/').pop()?.split('\\').pop() || file.name
+        return {
+          valid: false,
+          error: `'${baseName}' is not a valid PDF file. The file structure appears to be corrupted.`,
+        }
+      }
+    }
+
+    return { valid: true }
+  } catch (error) {
+    // Handle read errors gracefully
+    return {
+      valid: false,
+      error: 'Could not verify file integrity. Please try selecting the file again.',
+    }
+  }
+}
+
+/**
+ * Generates SHA-256 hash of a file using Web Crypto API
+ * 
+ * @param file - The file to hash
+ * @returns Hexadecimal string representation of SHA-256 hash
+ * 
+ * @example
+ * ```typescript
+ * const hash = await generateFileHash(document)
+ * console.log('File SHA-256:', hash)
+ * ```
+ */
+export async function generateFileHash(file: File): Promise<string> {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+    return hashHex
+  } catch (error) {
+    // Fallback: return placeholder if crypto API fails
+    console.warn('SHA-256 generation failed, using placeholder:', error)
+    return `placeholder-${file.name}-${file.size}`
+  }
+}
+
+/**
+ * Validates a file is a valid PDF and returns formatted result
+ * User-friendly messages for UI display
+ * 
+ * @param file - File to validate
+ * @returns Object with validation status and user-friendly message
+ */
+export async function validateFileForUpload(
+  file: File
+): Promise<{ isValid: boolean; message: string; sha256?: string }> {
+  const result = await validateFile(file)
+
+  if (result.valid) {
+    return {
+      isValid: true,
+      message: 'File is ready for upload',
+      sha256: result.sha256,
+    }
+  }
+
+  return {
+    isValid: false,
+    message: result.error || 'File validation failed',
+  }
+}
+
+/**
+ * Batch validates files and returns summary
+ * Useful for drag-and-drop validation feedback
+ */
+export async function validateFilesForUpload(
+  files: File[]
+): Promise<{
+  ready: Array<{ file: File; sha256: string }>
+  rejected: Array<{ file: File; reason: string }>
+  summary: string
+}> {
+  const { valid, invalid } = await validateMultipleFiles(files)
+
+  const ready = await Promise.all(
+    valid.map(async (file) => {
+      const sha256 = await generateFileHash(file)
+      return { file, sha256 }
+    })
+  )
+
+  const rejected = invalid.map(({ file, error }) => ({
+    file,
+    reason: error,
+  }))
+
+  let summary: string
+  if (ready.length === 0 && rejected.length === 0) {
+    summary = 'No files selected'
+  } else if (rejected.length === 0) {
+    summary = `All ${ready.length} file(s) are ready for upload`
+  } else if (ready.length === 0) {
+    summary = `${rejected.length} file(s) were rejected`
+  } else {
+    summary = `${ready.length} file(s) ready, ${rejected.length} rejected`
+  }
+
+  return { ready, rejected, summary }
 }
